@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# capturas de pruebas
+scripts/e2e/audit*/
+scripts/e2e/flow/
+scripts/e2e/shots/

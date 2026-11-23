@@ -1,36 +1,41 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# GC360 · Prototipo navegable
 
-## Getting Started
+Plataforma empresarial inteligente (CRM + operación de seguros + IA + SaaS) — caso inicial **Gran Seguros**.
+Prototipo funcional con flujos simulados de extremo a extremo, datos ficticios e integraciones demostrativas.
 
-First, run the development server:
+## Ejecutar
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
+pnpm dev          # http://localhost:3000
+# o en modo producción
+pnpm build && pnpm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+En el login elige la empresa (Gran Seguros / Andes Corredores) y un perfil. Desde el menú de usuario puedes **cambiar de perfil** sin salir y **restablecer los datos demo**.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Guion de demostración (recorridos F01–F09)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| # | Recorrido | Perfil | Dónde |
+|---|-----------|--------|-------|
+| F01 | WhatsApp → caso | Asesor (Andrés Gómez) | Bandeja → *Simular entrada → Cotizar vehículo* → *Crear caso* |
+| F02 | Caso → solicitud multiaseguradora | Asesor | Caso → *Solicitar cotización* → *Extraer datos con IA* → registrar 3 ofertas (*Usar valores de ejemplo*) |
+| F03 | Comparativo → selección → póliza | Asesor y Operaciones (Felipe Cardona) | Comparador → *Generar propuesta* → *Enviar* → *Registrar aceptación* → (Operaciones) *Registrar y validar póliza*. Cambia la prima para ver la detección de discrepancias |
+| F04 | Póliza → cartera y comisión | Operaciones / Financiero | Detalle de póliza / *Cartera y comisiones* |
+| F05 | Renovación programada | Operaciones | *Renovaciones* → *Iniciar renovación* (genera caso + borrador pendiente de aprobación) |
+| F06 | Siniestro y atención humana | Cualquiera | Bandeja → *Reporte de siniestro* o *Pide un asesor humano*; caso CAS-2026-0006 |
+| F07 | Asistente gerencial | Gerencia (Carolina Vélez) | *Asistente IA* → «Casos pendientes más de 48 horas» |
+| F08 | Permisos y separación multiempresa | Admin / Andes | *Usuarios, roles y auditoría → Prueba de aislamiento*; abrir `/casos/k_3` con un usuario de Andes |
+| F09 | Agente IA con autorización | Supervisor IA (Sebastián Mora) | *Supervisión IA* → revisar, editar, aprobar o rechazar |
 
-## Learn More
+Portal de cliente: perfil **Camilo Herrera** (Gran Seguros) o **Lucía Benavides** (Andes).
 
-To learn more about Next.js, take a look at the following resources:
+## Qué es real y qué es simulado
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Real en el prototipo:** persistencia de datos (en el navegador), aislamiento por empresa y rol en la capa de servicios, auditoría inalterable, reglas de negocio (RN-01…RN-15), dictado por voz (Web Speech), exportación CSV e impresión PDF.
+- **Simulado:** WhatsApp Business, Gmail, Microsoft 365, aseguradoras, facturación y el modelo LLM (motor determinista con la misma interfaz).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Stack
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Next.js 15 (App Router) · React 19 · TypeScript · Tailwind CSS 4 · Zustand · Recharts · Sonner · lucide-react.
+Arquitectura y convenciones en [CLAUDE.md](CLAUDE.md).

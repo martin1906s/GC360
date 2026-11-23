@@ -28,6 +28,27 @@
 - [x] Aislamiento de Afiliados: se corrigió la regla `scopeRows` para incluir `policyId` en el ámbito de datos del afiliado (cuotas, pólizas y comisiones derivadas).
 - [x] Compilación y tipado: `pnpm check` (tsc + eslint) pasa con 0 errores y 0 advertencias.
 
+## Ronda 3: integraciones, ERP y Academia (23 nov 2026)
+- **Integraciones** (`/config/integraciones`, menú Configuración). Asistentes por servicio:
+  - Microsoft 365 y Gmail: autorizar cuenta → buzones → reglas → prueba.
+  - WhatsApp: cuenta de Meta → webhook → plantillas → prueba.
+  - Aseguradoras: método API, portal o correo por aseguradora, con prueba.
+  - Facturación electrónica: proveedor → resolución DIAN → certificado → set de pruebas.
+  - Pagos PSE.
+  - El estado se guarda en el navegador (`gc360-demo:integrations-v1`). El indicador «Demo» de la barra superior lo refleja y enlaza a la configuración.
+- **Contabilidad y tesorería** (`/erp/financiero?m=…`). Seis pantallas: facturación (emitir con CUFE), contabilidad (comprobantes y balance de prueba), conciliación (cargar extractos y reclamar diferencias), tesorería (bancos, flujo de caja y movimientos), cuentas por pagar (aprobación por monto) y recaudos.
+- **Administración** (`/erp/administrativo?m=…`). Siete pantallas: RR. HH. (aprobar ausencias), nómina (liquidar y pagar), compras (flujo de requisición), proveedores, inventarios (entradas y salidas, alertas de stock), activos fijos (depreciación) y sedes (reservar salas).
+- **Academia**: reproductor en `/academia/[curso]` con lecciones animadas, subtítulos, velocidad, adelantar y retroceder, pantalla completa, avance guardado, notas, recursos y evaluación que se habilita al terminar.
+- Datos en `src/data/erp-demo.ts`; estado con `useDemoState` (`src/hooks/use-demo-state.ts`).
+- Verificado: `pnpm check` y `pnpm build` OK; `scripts/e2e/new-modules.js` pasa con 0 errores de consola.
+
+### Pendientes de esta ronda
+- [ ] Volver a desplegar en Netlify para publicar estos cambios.
+- [ ] Revisar a 1280 px las pestañas de ERP no capturadas en detalle (contabilidad, tesorería, recaudos, nómina, sedes).
+- [ ] Academia: cuestionario propio por curso (hoy remite a la evaluación general).
+- [ ] Integraciones: los identificadores y endpoints son de ejemplo; en producción vendrán de cada cliente.
+- [ ] Llevar el estado de ERP al store principal (`useDB`) si se requiere auditoría de esas acciones.
+
 ## Pendientes de revisar visualmente
 - [ ] Regenerar las capturas con `W=1280 node scripts/e2e/smoke.js` y `W=1440 …` (salen en `scripts/e2e/audit<ancho>/`) cuando se levante el servidor en el puerto 3360.
 - [ ] Correr el flujo E2E interactivo completo con `node scripts/e2e/flow.js` sobre el servidor de pruebas.

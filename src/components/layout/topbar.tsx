@@ -16,7 +16,8 @@ import { Avatar } from "@/components/ui/misc";
 import { Badge } from "@/components/ui/badge";
 import { Menu, MenuItem, MenuLabel, MenuSep } from "@/components/ui/menu";
 import { Modal, Sheet } from "@/components/ui/modal";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { useDemoState } from "@/hooks/use-demo-state";
 import { cn, fromNow } from "@/lib/utils";
 
 export function Topbar() {
@@ -182,34 +183,45 @@ export function Topbar() {
   );
 }
 
-const INTEGRATIONS = [
-  { name: "WhatsApp Business", status: "demo", detail: "Conversaciones de prueba. Los mensajes no se envían al cliente." },
-  { name: "Microsoft 365 / Outlook", status: "demo", detail: "Bandeja de correo de prueba." },
-  { name: "Gmail / Google Workspace", status: "demo", detail: "Bandeja de correo de prueba." },
-  { name: "Aseguradoras", status: "demo", detail: "Las ofertas se registran manualmente en el caso." },
-  { name: "Facturación electrónica", status: "demo", detail: "Disponible próximamente." },
-  { name: "Datos y auditoría", status: "real", detail: "Toda la información y el historial de cambios se guardan." },
-  { name: "Dictado por voz", status: "real", detail: "Disponible en la configuración de agentes IA." },
-  { name: "Exportación a Excel y PDF", status: "real", detail: "Disponible en tablas, informes y propuestas." },
+const INTEGRATIONS: { name: string; key?: string; detail: string }[] = [
+  { name: "WhatsApp Business", key: "whatsapp", detail: "Atención a clientes por WhatsApp." },
+  { name: "Microsoft 365 / Outlook", key: "m365", detail: "Correo corporativo en la bandeja omnicanal." },
+  { name: "Gmail / Google Workspace", key: "gmail", detail: "Correo de Google en la bandeja omnicanal." },
+  { name: "Aseguradoras", key: "insurers", detail: "Cotización y emisión directa con aseguradoras." },
+  { name: "Facturación electrónica", key: "einvoice", detail: "Facturas de comisión validadas ante la DIAN." },
+  { name: "Datos y auditoría", detail: "Toda la información y el historial de cambios se guardan." },
+  { name: "Exportación a Excel y PDF", detail: "Disponible en tablas, informes y propuestas." },
 ];
 
 function IntegrationsModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { can } = useCurrent();
   return (
-    <Modal open={open} onClose={onClose} size="lg" title="Canales e integraciones" description="Estado de conexión de los servicios en este entorno.">
-      <div className="divide-y rounded-lg border">
-        {INTEGRATIONS.map((i) => (
+    <Modal open={open} onClose={onClose} size="lg" title="Canales e integraciones" description="Estado de conexión de los servicios."
+      footer={can("config.edit") ? <Link href="/config/integraciones" onClick={onClose} className={buttonVariants()}><PlugZap /> Configurar integraciones</Link> : undefined}>
+      <IntegrationsList />
+    </Modal>
+  );
+}
+
+function IntegrationsList() {
+  const [state] = useDemoState<Record<string, { connected?: boolean }>>("integrations-v1", {});
+  return (
+    <div className="divide-y rounded-lg border">
+      {INTEGRATIONS.map((i) => {
+        const ok = !i.key || !!state[i.key]?.connected;
+        return (
           <div key={i.name} className="flex items-start gap-3 px-4 py-3">
-            {i.status === "real" ? <ShieldCheck className="mt-0.5 size-4 text-emerald-600" /> : <AlertTriangle className="mt-0.5 size-4 text-amber-500" />}
+            {ok ? <ShieldCheck className="mt-0.5 size-4 text-emerald-600" /> : <AlertTriangle className="mt-0.5 size-4 text-amber-500" />}
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <p className="text-sm font-medium">{i.name}</p>
-                {i.status === "real" ? <Badge tone="green">Conectado</Badge> : <Badge tone="amber">Modo demostración</Badge>}
+                {ok ? <Badge tone="green">Conectado</Badge> : <Badge tone="amber">Sin conectar · datos de demostración</Badge>}
               </div>
               <p className="mt-0.5 text-xs text-fg-muted">{i.detail}</p>
             </div>
           </div>
-        ))}
-      </div>
-    </Modal>
+        );
+      })}
+    </div>
   );
 }

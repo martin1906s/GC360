@@ -1,25 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { toast } from "sonner";
+import Link from "next/link";
+import { COURSES } from "@/data/erp-demo";
+import { useAcademy } from "@/hooks/use-academy";
 import { CheckCircle2, Clock, FileText, GraduationCap, PlayCircle, Send, Trophy } from "lucide-react";
 import { useCurrent } from "@/hooks/use-data";
 import { Guard } from "@/components/layout/guard";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { KpiCard, PageHeader, Progress, Tabs } from "@/components/ui/misc";
 import { Input } from "@/components/ui/form";
 import { cn, sleep } from "@/lib/utils";
 
-const COURSES = [
-  { id: "1", title: "Fundamentos de intermediación de seguros", area: "Obligatorio", lessons: 8, minutes: 95, progress: 100 },
-  { id: "2", title: "Seguro de automóviles: coberturas y deducibles", area: "Producto", lessons: 6, minutes: 70, progress: 65 },
-  { id: "3", title: "Pólizas de cumplimiento para contratistas", area: "Producto", lessons: 5, minutes: 60, progress: 20 },
-  { id: "4", title: "Atención omnicanal y uso de GC360", area: "Plataforma", lessons: 7, minutes: 50, progress: 40 },
-  { id: "5", title: "Técnicas de cierre y manejo de objeciones", area: "Comercial", lessons: 6, minutes: 80, progress: 0 },
-  { id: "6", title: "Protección de datos personales", area: "Cumplimiento", lessons: 4, minutes: 35, progress: 0 },
-];
 const LIBRARY = [
   ["Guía comparativa de coberturas de automóviles", "PDF · 12 págs."], ["Glosario de términos de seguros", "Documento interno"], ["Checklist de documentos por ramo", "Plantilla"],
   ["Proceso de reclamación de siniestros", "Procedimiento"], ["Argumentario comercial — Hogar", "Presentación"], ["Condiciones generales por aseguradora", "Biblioteca"],
@@ -35,13 +29,14 @@ export default function AcademyPage() {
 }
 
 function Academy() {
+  const { progress } = useAcademy();
   const [tab, setTab] = useState<"cursos" | "biblioteca" | "evaluacion" | "tutor">("cursos");
   return (
     <div className="animate-fade-in">
       <PageHeader title={"Academia GC360"} description="Formación de empleados y vendedores: cursos, biblioteca de productos de seguros, evaluaciones y tutor de IA." />
       <div className="mb-5 grid gap-4 sm:grid-cols-4">
         <KpiCard label="Cursos disponibles" value={COURSES.length} icon={<GraduationCap />} tone="blue" />
-        <KpiCard label="Completados" value={COURSES.filter((c) => c.progress === 100).length} icon={<CheckCircle2 />} tone="green" />
+        <KpiCard label="Completados" value={COURSES.filter((c) => progress[c.id] === 100).length} icon={<CheckCircle2 />} tone="green" />
         <KpiCard label="Horas de formación" value="7,8 h" icon={<Clock />} tone="indigo" />
         <KpiCard label="Puntaje promedio" value="86 / 100" icon={<Trophy />} tone="amber" />
       </div>
@@ -50,15 +45,19 @@ function Academy() {
         <CardContent>
           {tab === "cursos" && (
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {COURSES.map((c) => (
-                <div key={c.id} className="rounded-lg border p-4">
-                  <Badge tone={c.area === "Obligatorio" ? "red" : "slate"}>{c.area}</Badge>
-                  <p className="mt-3 font-medium">{c.title}</p>
-                  <p className="mt-1 text-xs text-fg-muted">{c.lessons} lecciones · {c.minutes} min</p>
-                  <div className="mt-4 flex items-center gap-3"><Progress value={c.progress} tone={c.progress === 100 ? "green" : "blue"} /><span className="w-9 text-right text-xs tabular-nums text-fg-muted">{c.progress}%</span></div>
-                  <Button size="sm" variant={c.progress === 100 ? "secondary" : "primary"} className="mt-4 w-full" onClick={() => toast("El curso se abrirá en el reproductor")}><PlayCircle /> {c.progress === 0 ? "Iniciar" : c.progress === 100 ? "Repasar" : "Continuar"}</Button>
-                </div>
-              ))}
+              {COURSES.map((c) => {
+                const pr = progress[c.id] ?? 0;
+                const mins = Math.round(c.lessons.reduce((s, l) => s + l.duration, 0) / 60);
+                return (
+                  <div key={c.id} className="flex flex-col rounded-lg border p-4">
+                    <Badge tone={c.area === "Obligatorio" ? "red" : "slate"} className="self-start">{c.area}</Badge>
+                    <p className="mt-3 font-medium">{c.title}</p>
+                    <p className="mt-1 text-xs text-fg-muted">{c.lessons.length} lecciones · {mins} min · {c.instructor}</p>
+                    <div className="mt-auto flex items-center gap-3 pt-4"><Progress value={pr} tone={pr === 100 ? "green" : "blue"} /><span className="w-9 text-right text-xs tabular-nums text-fg-muted">{pr}%</span></div>
+                    <Link href={`/academia/${c.id}`} className={buttonVariants({ size: "sm", variant: pr === 100 ? "secondary" : "primary", className: "mt-4 w-full" })}><PlayCircle /> {pr === 0 ? "Iniciar" : pr === 100 ? "Repasar" : "Continuar"}</Link>
+                  </div>
+                );
+              })}
             </div>
           )}
           {tab === "biblioteca" && (

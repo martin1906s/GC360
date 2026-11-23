@@ -1,6 +1,6 @@
 import {
   BarChart3, Bot, Boxes, BookOpenCheck, Briefcase, Building2, CalendarDays, Cog, FileStack, FileText, GraduationCap,
-  Inbox, KanbanSquare, LayoutDashboard, Network, RefreshCcw, ShieldCheck, Sparkles, Users, Wallet, Workflow, type LucideIcon,
+  Inbox, KanbanSquare, LayoutDashboard, Network, PlugZap, RefreshCcw, ShieldCheck, Sparkles, Users, Wallet, Workflow, type LucideIcon,
 } from "lucide-react";
 import type { Permission } from "@/domain/permissions";
 
@@ -44,16 +44,17 @@ export const NAVIGATION: NavGroup[] = [
   ] },
   { module: "Financiero", items: [
     { label: "Cartera y comisiones", href: "/financiero", icon: Wallet, perm: "finance.view", priority: "P2" },
-    { label: "Contabilidad y tesorería", href: "/erp/financiero", icon: FileStack, perm: "erp.view", priority: "P2" },
+    { label: "Contabilidad y tesorería", href: "/erp/financiero", icon: FileStack, perm: "erp.view" },
   ] },
   { module: "Administrativo", items: [
-    { label: "RR. HH., compras e inventario", href: "/erp/administrativo", icon: Boxes, perm: "erp.view", priority: "P2" },
+    { label: "RR. HH., compras e inventario", href: "/erp/administrativo", icon: Boxes, perm: "erp.view" },
   ] },
   { module: "Academia", items: [
     { label: "Academia GC360", href: "/academia", icon: GraduationCap, perm: "academy.view", priority: "P2" },
   ] },
   { module: "Configuración", items: [
     { label: "Catálogo de seguros", href: "/config/seguros", icon: BookOpenCheck, perm: "config.edit" },
+    { label: "Integraciones", href: "/config/integraciones", icon: PlugZap, perm: "config.edit" },
     { label: "Usuarios, roles y auditoría", href: "/config/usuarios", icon: Cog, perm: "audit.view" },
     { label: "Plataforma SaaS", href: "/config/saas", icon: Building2, perm: "saas.manage", priority: "P2" },
   ] },

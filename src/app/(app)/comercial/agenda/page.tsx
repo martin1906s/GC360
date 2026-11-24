@@ -60,10 +60,10 @@ function Agenda() {
                 {items.map((t) => {
                   const c = cases.find((x) => x.id === t.caseId);
                   return (
-                    <li key={t.id} className="flex items-center gap-4 px-5 py-3">
+                    <li key={t.id} className="flex items-center gap-3 px-4 py-3 sm:gap-4 sm:px-5">
                       <input type="checkbox" checked={t.done} onChange={() => toggleTask(t.id)} className="size-4 cursor-pointer accent-brand-600" />
-                      <span className="w-12 text-xs tabular-nums text-fg-muted">{fmtTime(t.dueAt)}</span>
-                      <span className="grid size-8 place-items-center rounded-lg bg-slate-100 text-fg-muted">{ICON[t.type]}</span>
+                      <span className="w-10 shrink-0 text-xs tabular-nums text-fg-muted">{fmtTime(t.dueAt)}</span>
+                      <span className="hidden size-8 shrink-0 place-items-center rounded-lg bg-slate-100 text-fg-muted sm:grid">{ICON[t.type]}</span>
                       <div className="min-w-0 flex-1">
                         <p className={cn("text-[13px] font-medium", t.done && "text-fg-subtle line-through")}>{t.title}</p>
                         <p className="text-[11px] text-fg-muted">
@@ -71,9 +71,9 @@ function Agenda() {
                           {c && <> · <Link href={`/casos/${c.id}`} className="font-medium text-brand-700 hover:underline">{c.code}</Link></>}
                         </p>
                       </div>
-                      {t.mandatory && <Badge tone="red">Obligatoria</Badge>}
-                      {t.origin !== "manual" && <Badge tone="teal"><Bot className="size-3" /> {t.origin === "ia" ? "IA" : "Automatización"}</Badge>}
-                      <UserChip id={t.assigneeId} showName={scope === "team"} />
+                      {t.mandatory && <Badge tone="red" className="hidden sm:inline-flex">Obligatoria</Badge>}
+                      {t.origin !== "manual" && <Badge tone="teal" className="hidden sm:inline-flex"><Bot className="size-3" /> {t.origin === "ia" ? "IA" : "Automatización"}</Badge>}
+                      <span className="hidden shrink-0 md:block"><UserChip id={t.assigneeId} showName={scope === "team"} /></span>
                     </li>
                   );
                 })}

@@ -275,7 +275,7 @@ function Thread({ conv, canReply, onBack }: { conv: Conversation; canReply: bool
   return (
     <>
       <section className="flex min-w-0 flex-1 flex-col bg-canvas">
-        <header className="flex items-center gap-3 border-b bg-white px-5 py-3">
+        <header className="flex items-center gap-2 border-b bg-white px-3 py-3 sm:gap-3 sm:px-5">
           {onBack && (
             <Button size="sm" variant="ghost" className="md:hidden -ml-2" onClick={onBack}>
               <ArrowLeft className="size-4" />
@@ -288,15 +288,15 @@ function Thread({ conv, canReply, onBack }: { conv: Conversation; canReply: bool
             </div>
             <p className="truncate text-xs text-fg-muted">{conv.contactHandle}{conv.subject ? ` · ${conv.subject}` : ""}</p>
           </div>
-          <Button size="sm" variant="ghost" className="2xl:hidden" onClick={() => setCtxOpen(true)}><PanelRight /> Detalles</Button>
-          <Button size="sm" className="2xl:hidden" onClick={() => setCaseModal(true)}><Briefcase /> Crear caso</Button>
+          <Button size="sm" variant="ghost" className="shrink-0 px-2 sm:px-3 2xl:hidden" title="Detalles" onClick={() => setCtxOpen(true)}><PanelRight /> <span className="hidden sm:inline">Detalles</span></Button>
+          <Button size="sm" className="shrink-0 px-2 sm:px-3 2xl:hidden" title="Crear caso" onClick={() => setCaseModal(true)}><Briefcase /> <span className="hidden sm:inline">Crear caso</span></Button>
           {conv.mode === "ia" ? (
-            <Button size="sm" variant="secondary" onClick={() => { handoffToHuman(conv.id, user!.id, `Tomada por ${user!.name}`); toast.success("Ahora atiendes esta conversación", { description: "La IA suspendió respuestas automáticas." }); }}>
-              <UserRound /> Tomar conversación
+            <Button size="sm" variant="secondary" className="shrink-0 px-2 sm:px-3" title="Tomar conversación" onClick={() => { handoffToHuman(conv.id, user!.id, `Tomada por ${user!.name}`); toast.success("Ahora atiendes esta conversación", { description: "La IA suspendió respuestas automáticas." }); }}>
+              <UserRound /> <span className="hidden sm:inline">Tomar conversación</span>
             </Button>
           ) : (
-            <Button size="sm" variant="secondary" onClick={() => { returnToAI(conv.id); toast("Atención devuelta a la IA"); }}>
-              <Bot /> Devolver a IA
+            <Button size="sm" variant="secondary" className="shrink-0 px-2 sm:px-3" title="Devolver a IA" onClick={() => { returnToAI(conv.id); toast("Atención devuelta a la IA"); }}>
+              <Bot /> <span className="hidden sm:inline">Devolver a IA</span>
             </Button>
           )}
         </header>
@@ -343,11 +343,11 @@ function Thread({ conv, canReply, onBack }: { conv: Conversation; canReply: bool
               className="min-h-[64px] resize-none border-0 focus:ring-0"
             />
             <div className="flex items-center gap-1 border-t px-2 py-1.5">
-              <Button size="xs" variant="ghost" onClick={suggest} disabled={!canReply}><Wand2 /> Sugerir con IA</Button>
+              <Button size="xs" variant="ghost" title="Sugerir con IA" onClick={suggest} disabled={!canReply}><Wand2 /> <span className="hidden sm:inline">Sugerir con IA</span></Button>
               <Menu
                 align="left"
                 width="w-80"
-                trigger={() => <Button size="xs" variant="ghost" disabled={!canReply}><MessageSquarePlus /> Plantillas</Button>}
+                trigger={() => <Button size="xs" variant="ghost" title="Plantillas" disabled={!canReply}><MessageSquarePlus /> <span className="hidden sm:inline">Plantillas</span></Button>}
               >
                 {(close) => (
                   <>

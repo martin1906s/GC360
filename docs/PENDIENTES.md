@@ -49,6 +49,18 @@
 - [ ] Integraciones: los identificadores y endpoints son de ejemplo; en producción vendrán de cada cliente.
 - [ ] Llevar el estado de ERP al store principal (`useDB`) si se requiere auditoría de esas acciones.
 
+## Ronda 4: teléfonos, nómina, ficha de empleados y KPI (24 nov 2026)
+- **Teléfonos:** la barra superior desbordaba en todas las pantallas (el buscador no se encogía). Corregido junto con los hijos de grillas (`.grid > * { min-width: 0 }` en `@layer base`), los menús desplegables (fijos bajo la barra en teléfono), la bandeja, la agenda, Supervisión IA, el catálogo de seguros y el reproductor. Indicadores en 2 columnas en teléfono. Auditoría: `scripts/e2e/mobile-audit.js` (`W=340|390`) → 0 desbordes en todas las pantallas.
+- **Nómina** (`src/components/erp/hr.tsx`): novedades (horas extra, comisiones, bonificaciones, incapacidades, descuentos) → liquidación → aprobar o rechazar cada pago con motivo, o aprobar en bloque → envío al banco solo de lo aprobado (referencia de dispersión). Incluye desprendible imprimible, historial de aprobaciones e indicadores. Solo aprueban Financiero y Gerencia.
+- **Recursos humanos:** ficha del colaborador (información personal, seguridad social, cuenta bancaria, contrato e historial salarial, vacaciones, desempeño, documentos), distribución por área y 6 indicadores.
+- **Indicadores:** resumen del módulo en Contabilidad y tesorería y en Administración (se puede hacer clic para ir a la pestaña), y nuevos indicadores en Contabilidad, Conciliación, Recaudos y Sedes. `useDemoState` sincroniza componentes que usan la misma clave.
+- Corregido: el balance de prueba no cuadraba; se agregó la cuenta 3105 (débitos = créditos = $639,75 M).
+- Verificado: tsc y eslint OK, build OK, `scripts/e2e/hr-payroll.js` pasa y aprobación desde teléfono OK, con 0 errores.
+
+### Pendientes de esta ronda
+- [ ] Commit y push a `main` para publicar en Netlify (incluye también los ajustes de teléfono de la ronda anterior).
+- [ ] `pnpm check` falló una vez con el código 3221226505 (caída de Node en Windows al encadenar tsc + eslint); por separado pasan. Si se repite, ejecutarlos por separado.
+
 ## Pendientes de revisar visualmente
 - [ ] Regenerar las capturas con `W=1280 node scripts/e2e/smoke.js` y `W=1440 …` (salen en `scripts/e2e/audit<ancho>/`) cuando se levante el servidor en el puerto 3360.
 - [ ] Correr el flujo E2E interactivo completo con `node scripts/e2e/flow.js` sobre el servidor de pruebas.

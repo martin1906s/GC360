@@ -4,7 +4,7 @@ import { Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { Banknote, BookText, CheckCircle2, FileCheck2, FileText, Landmark, Printer, Receipt, Scale, Upload, Wand2 } from "lucide-react";
+import { AlertTriangle, Banknote, BookText, CheckCircle2, FileCheck2, FileText, HandCoins, Landmark, Printer, Receipt, Scale, Upload, Wand2 } from "lucide-react";
 import { useCurrent, useLookups, useScoped } from "@/hooks/use-data";
 import { useDemoState } from "@/hooks/use-demo-state";
 import { BANK_ACCOUNTS, BANK_MOVEMENTS, CASHFLOW, CHART_OF_ACCOUNTS, PAYABLES } from "@/data/erp-demo";
@@ -46,6 +46,7 @@ function ErpFinance() {
   return (
     <div className="animate-fade-in">
       <PageHeader title="Contabilidad y tesorería" description="Facturación, contabilidad, conciliación con aseguradoras, bancos, pagos y recaudos." />
+      <FinanceSummary onOpen={setTab} />
       <Card>
         <Tabs className="px-3" value={tab} onChange={setTab} tabs={TABS.map((t) => ({ key: t.key, label: <span className="flex items-center gap-1.5"><t.icon className="size-4" />{t.label}</span> }))} />
         <CardContent>
@@ -57,6 +58,29 @@ function ErpFinance() {
           {tab === "recaudos" && <Collections />}
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+/* ───────── Resumen del módulo ───────── */
+
+function FinanceSummary({ onOpen }: { onOpen: (t: Tab) => void }) {
+  const [invoices] = useInvoices();
+  const [payables] = useDemoState("cxp-v1", PAYABLES);
+  const installments = useScoped("installments");
+  const billed = invoices.filter((i) => i.status !== "pendiente").reduce((s, i) => s + i.subtotal * 1.19, 0);
+  const toBill = invoices.filter((i) => i.status === "pendiente");
+  const cash = BANK_ACCOUNTS.reduce((s, b) => s + b.balance, 0);
+  const due = payables.filter((p) => !["pagada", "programada"].includes(p.status));
+  const late = installments.filter((i) => !i.paid && new Date(i.dueDate) < new Date());
+  const netFlow = CASHFLOW.reduce((s, w) => s + w.ingresos - w.egresos, 0);
+  return (
+    <div className="mb-5 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-5 max-md:[&>*:last-child:nth-child(odd)]:col-span-2">
+      <KpiCard label="Facturado (con IVA)" value={moneyShort(billed)} hint={`${toBill.length} comisiones por facturar`} icon={<Receipt />} tone="green" onClick={() => onOpen("facturacion")} />
+      <KpiCard label="Disponible en bancos" value={moneyShort(cash)} hint={`${BANK_ACCOUNTS.length} cuentas`} icon={<Landmark />} tone="blue" onClick={() => onOpen("tesoreria")} />
+      <KpiCard label="Flujo neto 6 semanas" value={moneyShort(netFlow)} hint="Proyección" delta={netFlow >= 0 ? 6 : -6} icon={<Scale />} tone={netFlow >= 0 ? "teal" : "red"} onClick={() => onOpen("tesoreria")} />
+      <KpiCard label="Cuentas por pagar" value={moneyShort(due.reduce((s, p) => s + p.amount, 0))} hint={`${due.length} pendientes`} icon={<Banknote />} tone="amber" onClick={() => onOpen("pagar")} />
+      <KpiCard label="Cartera vencida" value={moneyShort(late.reduce((s, i) => s + i.amount, 0))} hint={`${late.length} cuotas`} icon={<AlertTriangle />} tone={late.length ? "red" : "slate"} onClick={() => onOpen("recaudos")} />
     </div>
   );
 }
@@ -106,7 +130,7 @@ function Invoicing() {
   const pending = invoices.filter((i) => i.status === "pendiente");
   return (
     <div className="space-y-5">
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3">
         <KpiCard label="Facturado (total con IVA)" value={moneyShort(invoices.filter((i) => i.status !== "pendiente").reduce((s, i) => s + i.subtotal * 1.19, 0))} tone="green" />
         <KpiCard label="Comisiones por facturar" value={pending.length} hint={money(pending.reduce((s, i) => s + i.subtotal, 0))} tone="amber" />
         <KpiCard label="Rechazos DIAN" value={0} tone="slate" hint="Últimos 30 días" />
@@ -148,7 +172,17 @@ function Accounting() {
   const entries = commissions.slice(0, 8).map((c, i) => ({ id: c.id, number: `CC-${String(310 + i).padStart(4, "0")}`, concept: `Causación comisión ${insurers.get(c.insurerId)?.short} · ${policies.find((p) => p.id === c.policyId)?.number}`, amount: c.amount, posted: c.status !== "causada" || generated.includes(c.id) }));
   const totalD = CHART_OF_ACCOUNTS.filter((a) => a.nature === "Débito").reduce((s, a) => s + a.balance, 0);
   const totalC = CHART_OF_ACCOUNTS.filter((a) => a.nature === "Crédito").reduce((s, a) => s + a.balance, 0);
+  const income = CHART_OF_ACCOUNTS.find((x) => x.code === "4150")!.balance;
+  const expenses = CHART_OF_ACCOUNTS.filter((x) => x.code.startsWith("5")).reduce((s2, x) => s2 + x.balance, 0);
+  const pendingEntries = entries.filter((e) => !e.posted).length;
   return (
+    <div className="space-y-5">
+    <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+      <KpiCard label="Ingresos por comisiones" value={moneyShort(income)} hint="Acumulado del año" tone="green" />
+      <KpiCard label="Gastos operacionales" value={moneyShort(expenses)} hint="Personal y arriendos" tone="amber" />
+      <KpiCard label="Utilidad operacional" value={moneyShort(income - expenses)} hint={`Margen ${Math.round(((income - expenses) / income) * 100)}%`} tone="blue" />
+      <KpiCard label="Comprobantes por contabilizar" value={pendingEntries} hint={pendingEntries ? "Causaciones pendientes" : "Todo contabilizado"} tone={pendingEntries ? "violet" : "slate"} />
+    </div>
     <div className="grid gap-5 2xl:grid-cols-2">
       <div>
         <p className="mb-2 text-sm font-semibold">Comprobantes automáticos desde pólizas</p>
@@ -177,6 +211,7 @@ function Accounting() {
           </table>
         </div>
       </div>
+    </div>
     </div>
   );
 }
@@ -208,13 +243,12 @@ function Reconciliation() {
         <div className="flex-1"><p className="text-sm font-medium">Extractos de pago de aseguradoras</p><p className="text-xs text-fg-muted">Cóndor, Ceiba, Atlas y Faro · periodo noviembre 2026</p></div>
         <Button onClick={load} loading={loading} variant={loaded ? "secondary" : "primary"}><Upload /> {loaded ? "Volver a cargar" : "Cargar extractos"}</Button>
       </div>
-      {loaded && (
-        <div className="grid gap-4 sm:grid-cols-3">
-          <KpiCard label="Conciliados" value={rows.filter((r) => r.state === "conciliado").length} tone="green" />
-          <KpiCard label="Con diferencia" value={rows.filter((r) => r.state === "diferencia").length} tone="amber" />
-          <KpiCard label="No pagados" value={rows.filter((r) => r.state === "no_pagado").length} tone="red" />
-        </div>
-      )}
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+        <KpiCard label="Comisión esperada" value={moneyShort(rows.reduce((s2, r) => s2 + r.amount, 0))} hint={`${rows.length} pólizas`} tone="blue" />
+        <KpiCard label="Recibido" value={loaded ? moneyShort(rows.reduce((s2, r) => s2 + r.received, 0)) : "—"} hint={loaded ? "Según extractos" : "Carga los extractos"} tone="green" />
+        <KpiCard label="Diferencias" value={loaded ? moneyShort(Math.abs(rows.reduce((s2, r) => s2 + r.diff, 0))) : "—"} hint={loaded ? `${rows.filter((r) => r.state === "diferencia").length} con diferencia · ${rows.filter((r) => r.state === "no_pagado").length} sin pago` : ""} tone={loaded ? "red" : "slate"} />
+        <KpiCard label="Conciliado" value={loaded ? `${Math.round((rows.filter((r) => r.state === "conciliado").length / Math.max(1, rows.length)) * 100)}%` : "0%"} hint={`${approved.length} reclamaciones enviadas`} tone="teal" />
+      </div>
       <div className="overflow-x-auto rounded-lg border">
         <table className="w-full text-sm">
           <thead><tr className="border-b bg-slate-50/60 text-left text-[11px] font-semibold uppercase tracking-wide text-fg-muted"><th className="py-2.5 pl-4">Póliza</th><th className="px-3">Aseguradora</th><th className="px-3 text-right">Esperado</th><th className="px-3 text-right">Recibido</th><th className="px-3 text-right">Diferencia</th><th className="pr-4">Resultado</th></tr></thead>
@@ -251,7 +285,7 @@ function Treasury() {
   const total = BANK_ACCOUNTS.reduce((s, b) => s + b.balance, 0);
   return (
     <div className="space-y-5">
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <KpiCard label="Disponible total" value={moneyShort(total)} tone="blue" />
         {BANK_ACCOUNTS.map((b) => <KpiCard key={b.id} label={`${b.bank} · ${b.type}`} value={moneyShort(b.balance)} hint={b.number} tone="slate" />)}
       </div>
@@ -312,7 +346,7 @@ function Payables() {
   ];
   return (
     <div className="space-y-5">
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3">
         <KpiCard label="Por pagar" value={moneyShort(rows.filter((r) => !["pagada", "programada"].includes(r.status)).reduce((s, r) => s + r.amount, 0))} tone="amber" />
         <KpiCard label="Vencidas" value={rows.filter((r) => r.status === "vencida").length} tone="red" />
         <KpiCard label="Programadas" value={rows.filter((r) => r.status === "programada").length} tone="teal" />
@@ -335,7 +369,18 @@ function Collections() {
   const [ref, setRef] = useState("");
   const pending = installments.filter((i) => !i.paid && !received.some((r) => r.installmentId === i.id)).sort((a, b) => a.dueDate.localeCompare(b.dueDate)).slice(0, 10);
   const pol = (id: string) => policies.find((p) => p.id === id);
+  const allPending = installments.filter((i) => !i.paid && !received.some((r) => r.installmentId === i.id));
+  const overdue = allPending.filter((i) => new Date(i.dueDate) < new Date());
+  const collected = received.reduce((s2, r) => s2 + (installments.find((i) => i.id === r.installmentId)?.amount ?? 0), 0);
+  const rate = Math.round(((installments.length - allPending.length) / Math.max(1, installments.length)) * 100);
   return (
+    <div className="space-y-5">
+    <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+      <KpiCard label="Por recaudar" value={moneyShort(allPending.reduce((s2, i) => s2 + i.amount, 0))} hint={`${allPending.length} cuotas`} icon={<HandCoins />} tone="blue" />
+      <KpiCard label="Cuotas vencidas" value={overdue.length} hint={moneyShort(overdue.reduce((s2, i) => s2 + i.amount, 0))} tone={overdue.length ? "red" : "slate"} />
+      <KpiCard label="Recaudado hoy" value={moneyShort(collected)} hint={`${received.length} pagos registrados`} tone="green" />
+      <KpiCard label="Tasa de recaudo" value={`${rate}%`} hint="Cuotas pagadas / emitidas" tone="teal" />
+    </div>
     <div className="grid gap-5 2xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
       <div>
         <p className="mb-2 text-sm font-semibold">Cuotas por recaudar</p>
@@ -372,6 +417,7 @@ function Collections() {
           </div>
         </Modal>
       )}
+    </div>
     </div>
   );
 }

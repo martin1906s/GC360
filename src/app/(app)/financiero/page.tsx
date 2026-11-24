@@ -65,7 +65,7 @@ function Finance() {
         description="Cuotas pendientes y comisiones de intermediación por póliza, aseguradora y afiliado."
         actions={<Button variant="secondary" onClick={() => downloadFile(`${tab}.csv`, toCSV(tab === "cartera" ? pending.map((i) => ({ Póliza: pol(i.policyId)?.number, Cuota: i.number, Vence: fmtDate(i.dueDate), Valor: i.amount })) : commissions.map((c) => ({ Póliza: pol(c.policyId)?.number, Aseguradora: insurers.get(c.insurerId)?.short, Comisión: c.amount, Estado: c.status }))))}><Download /> Exportar</Button>}
       />
-      <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mb-5 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <KpiCard label="Saldo de cartera" value={moneyShort(pending.reduce((s, i) => s + i.amount, 0))} tone="blue" hint={`${pending.length} cuotas`} />
         <KpiCard label="Cartera vencida" value={money(late.reduce((s, i) => s + i.amount, 0))} tone="red" hint={`${late.length} cuotas`} />
         <KpiCard label="Comisiones por liquidar" value={moneyShort(commissions.filter((c) => c.status !== "liquidada").reduce((s, c) => s + c.amount, 0))} tone="amber" />

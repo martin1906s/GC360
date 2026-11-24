@@ -45,7 +45,7 @@ function Policies() {
   return (
     <div className="animate-fade-in">
       <PageHeader title="Pólizas" description="Pólizas de tus clientes con su vigencia y estado." actions={<Button variant="secondary" onClick={() => downloadFile("polizas.csv", toCSV(rows.map((p) => ({ Número: p.number, Bien: p.insuredItem, Prima: p.premium, Inicio: fmtDate(p.startDate), Fin: fmtDate(p.endDate), Estado: POLICY_STATUS[p.status].label }))))}><Download /> Exportar</Button>} />
-      <div className="mb-5 grid gap-4 sm:grid-cols-4">
+      <div className="mb-5 grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-4">
         <KpiCard label="Pólizas vigentes" value={policies.filter((p) => ["vigente", "por_vencer"].includes(p.status)).length} tone="green" />
         <KpiCard label="Por vencer (≤30 días)" value={policies.filter((p) => daysUntil(p.endDate) <= 30 && daysUntil(p.endDate) >= 0).length} tone="amber" />
         <KpiCard label="Con discrepancias" value={policies.filter((p) => p.validation.status === "con_discrepancias").length} tone="red" />

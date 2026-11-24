@@ -3,18 +3,19 @@
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { Boxes, Building, CalendarPlus, Check, ClipboardList, Laptop, Minus, Plus, Star, Truck, Users, Wallet, X } from "lucide-react";
+import { AlertTriangle, Boxes, Building, CalendarPlus, ClipboardList, Laptop, Minus, Plus, Star, Truck, Users, Wallet } from "lucide-react";
 import { useDemoState } from "@/hooks/use-demo-state";
-import { ASSETS, EMPLOYEES, INVENTORY, LEAVE_REQUESTS, OFFICES, PURCHASE_REQUESTS, ROOM_BOOKINGS, VENDORS } from "@/data/erp-demo";
+import { ASSETS, EMPLOYEES, INVENTORY, OFFICES, PURCHASE_REQUESTS, ROOM_BOOKINGS, VENDORS } from "@/data/erp-demo";
 import { Guard } from "@/components/layout/guard";
+import { Payroll, People } from "@/components/erp/hr";
 import { Card, CardContent } from "@/components/ui/card";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Avatar, KpiCard, PageHeader, Progress, Tabs } from "@/components/ui/misc";
+import { KpiCard, PageHeader, Progress, Tabs } from "@/components/ui/misc";
 import { Modal } from "@/components/ui/modal";
 import { Field, Input, Select } from "@/components/ui/form";
-import { cn, fmtDate, money, moneyShort, sleep } from "@/lib/utils";
+import { cn, fmtDate, money, moneyShort } from "@/lib/utils";
 
 type Tab = "rrhh" | "nomina" | "compras" | "proveedores" | "inventario" | "activos" | "sedes";
 const TABS: { key: Tab; label: string; icon: React.ElementType }[] = [
@@ -37,6 +38,7 @@ function ErpAdmin() {
   return (
     <div className="animate-fade-in">
       <PageHeader title="Administración" description="Personal, nómina, compras, proveedores, inventarios, activos y sedes." />
+      <AdminSummary onOpen={setTab} />
       <Card>
         <Tabs className="px-3" value={tab} onChange={setTab} tabs={TABS.map((t) => ({ key: t.key, label: <span className="flex items-center gap-1.5"><t.icon className="size-4" />{t.label}</span> }))} />
         <CardContent>
@@ -53,99 +55,25 @@ function ErpAdmin() {
   );
 }
 
+function AdminSummary({ onOpen }: { onOpen: (t: Tab) => void }) {
+  const [purchases] = useDemoState("purchases-v1", PURCHASE_REQUESTS);
+  const [items] = useDemoState("inventory-v1", INVENTORY);
+  const payroll = EMPLOYEES.reduce((s, e) => s + e.salary, 0);
+  const inApproval = purchases.filter((p) => p.status === "en_aprobacion");
+  const low = items.filter((i) => i.stock < i.min).length;
+  const assets = ASSETS.reduce((s, a) => s + a.cost * Math.max(0, 1 - yearsSince(a.acquired) / a.lifeYears), 0);
+  return (
+    <div className="mb-5 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-5 max-md:[&>*:last-child:nth-child(odd)]:col-span-2">
+      <KpiCard label="Colaboradores activos" value={EMPLOYEES.filter((e) => e.status === "Activo").length} hint={`de ${EMPLOYEES.length} en total`} icon={<Users />} tone="blue" onClick={() => onOpen("rrhh")} />
+      <KpiCard label="Nómina mensual" value={moneyShort(payroll * 1.305)} hint="Salarios + aportes" icon={<Wallet />} tone="green" onClick={() => onOpen("nomina")} />
+      <KpiCard label="Compras por aprobar" value={inApproval.length} hint={moneyShort(inApproval.reduce((s, p) => s + p.amount, 0))} icon={<ClipboardList />} tone="amber" onClick={() => onOpen("compras")} />
+      <KpiCard label="Artículos bajo mínimo" value={low} hint={low ? "Requieren reposición" : "Inventario al día"} icon={<AlertTriangle />} tone={low ? "red" : "slate"} onClick={() => onOpen("inventario")} />
+      <KpiCard label="Activos en libros" value={moneyShort(assets)} hint={`${ASSETS.length} activos`} icon={<Laptop />} tone="slate" onClick={() => onOpen("activos")} />
+    </div>
+  );
+}
+
 const yearsSince = (d: string) => Math.max(0, (Date.now() - new Date(d).getTime()) / (365.25 * 86400000));
-
-/* ───────── RR. HH. ───────── */
-
-function People() {
-  const [requests, setRequests] = useDemoState("hr-leaves-v1", LEAVE_REQUESTS);
-  const decide = (id: string, ok: boolean) => { setRequests((xs) => xs.map((x) => (x.id === id ? { ...x, status: ok ? "aprobada" : "rechazada" } : x))); toast.success(ok ? "Solicitud aprobada" : "Solicitud rechazada"); };
-  const cols: Column<(typeof EMPLOYEES)[number]>[] = [
-    { key: "n", header: "Colaborador", sort: (e) => e.name, cell: (e) => <div className="flex items-center gap-2.5"><Avatar name={e.name} size="sm" color="#475569" /><div><p className="text-[13px] font-medium">{e.name}</p><p className="text-[11px] text-fg-muted">{e.role}</p></div></div> },
-    { key: "a", header: "Área", cell: (e) => <span className="text-[13px]">{e.area}</span> },
-    { key: "c", header: "Contrato", cell: (e) => <span className="text-[13px]">{e.contract}</span>, hide: "xl" },
-    { key: "h", header: "Antigüedad", sort: (e) => e.hired, cell: (e) => <span className="text-[13px]">{yearsSince(e.hired).toFixed(1)} años</span>, hide: "lg" },
-    { key: "v", header: "Vacaciones disp.", align: "right", cell: (e) => `${e.vacationDays} días` },
-    { key: "s", header: "Estado", cell: (e) => <Badge tone={e.status === "Activo" ? "green" : "amber"} dot>{e.status}</Badge> },
-  ];
-  return (
-    <div className="space-y-5">
-      <div className="grid gap-4 sm:grid-cols-4">
-        <KpiCard label="Colaboradores" value={EMPLOYEES.length} tone="blue" />
-        <KpiCard label="En vacaciones" value={EMPLOYEES.filter((e) => e.status === "Vacaciones").length} tone="amber" />
-        <KpiCard label="Solicitudes pendientes" value={requests.filter((r) => r.status === "pendiente").length} tone="violet" />
-        <KpiCard label="Rotación anual" value="6%" tone="slate" />
-      </div>
-      <div className="grid gap-5 2xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-        <div className="rounded-lg border"><DataTable rows={EMPLOYEES} columns={cols} rowKey={(e) => e.id} dense search={(e) => `${e.name} ${e.role} ${e.area}`} searchPlaceholder="Buscar colaborador…" /></div>
-        <div>
-          <p className="mb-2 text-sm font-semibold">Solicitudes de ausencia</p>
-          <ul className="divide-y rounded-lg border">
-            {requests.map((r) => (
-              <li key={r.id} className="flex items-center gap-3 px-4 py-3">
-                <div className="min-w-0 flex-1"><p className="text-[13px] font-medium">{r.employee}</p><p className="text-[11px] text-fg-muted">{r.type} · {fmtDate(r.from)} – {fmtDate(r.to)} · {r.days} día(s)</p></div>
-                {r.status === "pendiente" ? (
-                  <div className="flex gap-1"><Button size="icon-sm" variant="ghost" title="Rechazar" onClick={() => decide(r.id, false)}><X /></Button><Button size="icon-sm" variant="success" title="Aprobar" onClick={() => decide(r.id, true)}><Check /></Button></div>
-                ) : <Badge tone={r.status === "aprobada" ? "green" : "red"}>{r.status}</Badge>}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ───────── Nómina ───────── */
-
-function Payroll() {
-  const [state, setState] = useDemoState<"borrador" | "liquidada" | "pagada">("payroll-v1", "borrador");
-  const [busy, setBusy] = useState(false);
-  const rows = EMPLOYEES.map((e) => {
-    const transport = e.salary <= 2 * 1_423_500 ? 200_000 : 0;
-    const health = Math.round(e.salary * 0.04);
-    const pension = Math.round(e.salary * 0.04);
-    return { ...e, transport, health, pension, net: e.salary + transport - health - pension };
-  });
-  const total = rows.reduce((s, r) => s + r.net, 0);
-  const employer = Math.round(rows.reduce((s, r) => s + r.salary, 0) * 0.3);
-  const advance = async (next: "liquidada" | "pagada") => { setBusy(true); await sleep(1100); setState(next); setBusy(false); toast.success(next === "liquidada" ? "Nómina liquidada" : "Pago de nómina enviado al banco", { description: next === "pagada" ? "Nómina electrónica transmitida" : `${rows.length} colaboradores` }); };
-  return (
-    <div className="space-y-5">
-      <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-slate-50/60 p-4">
-        <div className="flex-1"><p className="text-sm font-semibold">Periodo: noviembre 2026 · quincena 2</p><p className="text-xs text-fg-muted">Fecha de pago: 30 nov 2026</p></div>
-        <div className="flex items-center gap-2">
-          {(["borrador", "liquidada", "pagada"] as const).map((s, i) => <span key={s} className={cn("rounded-md px-2 py-1 text-xs font-medium", state === s ? "bg-brand-600 text-white" : (["borrador", "liquidada", "pagada"].indexOf(state) > i ? "bg-emerald-50 text-emerald-700" : "bg-white text-fg-muted ring-1 ring-border"))}>{i + 1}. {s === "borrador" ? "Novedades" : s === "liquidada" ? "Liquidación" : "Pago"}</span>)}
-        </div>
-        {state === "borrador" && <Button loading={busy} onClick={() => advance("liquidada")}>Liquidar nómina</Button>}
-        {state === "liquidada" && <Button loading={busy} variant="success" onClick={() => advance("pagada")}>Aprobar y pagar</Button>}
-        {state === "pagada" && <Button variant="secondary" onClick={() => setState("borrador")}>Nuevo periodo</Button>}
-      </div>
-      <div className="grid gap-4 sm:grid-cols-3">
-        <KpiCard label="Neto a pagar" value={moneyShort(total)} tone="blue" />
-        <KpiCard label="Aportes del empleador (aprox.)" value={moneyShort(employer)} tone="slate" />
-        <KpiCard label="Costo total del periodo" value={moneyShort(total + employer)} tone="amber" />
-      </div>
-      <div className="overflow-x-auto rounded-lg border">
-        <table className="w-full text-sm">
-          <thead><tr className="border-b bg-slate-50/60 text-left text-[11px] font-semibold uppercase tracking-wide text-fg-muted"><th className="py-2.5 pl-4">Colaborador</th><th className="px-3 text-right">Salario</th><th className="hidden px-3 text-right lg:table-cell">Aux. transporte</th><th className="hidden px-3 text-right xl:table-cell">Salud 4%</th><th className="hidden px-3 text-right xl:table-cell">Pensión 4%</th><th className="pr-4 text-right">Neto</th></tr></thead>
-          <tbody className="divide-y">
-            {rows.map((r) => (
-              <tr key={r.id}>
-                <td className="whitespace-nowrap py-2.5 pl-4"><p className="text-[13px] font-medium">{r.name}</p><p className="text-[11px] text-fg-muted">{r.area}</p></td>
-                <td className="whitespace-nowrap px-3 text-right tabular-nums">{money(r.salary)}</td>
-                <td className="hidden whitespace-nowrap px-3 text-right tabular-nums lg:table-cell">{r.transport ? money(r.transport) : "—"}</td>
-                <td className="hidden whitespace-nowrap px-3 text-right tabular-nums text-fg-muted xl:table-cell">-{money(r.health)}</td>
-                <td className="hidden whitespace-nowrap px-3 text-right tabular-nums text-fg-muted xl:table-cell">-{money(r.pension)}</td>
-                <td className="whitespace-nowrap pr-4 text-right font-medium tabular-nums">{money(r.net)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
 
 /* ───────── Compras ───────── */
 
@@ -197,7 +125,7 @@ function Vendors() {
   ];
   return (
     <div className="space-y-5">
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3">
         <KpiCard label="Proveedores activos" value={VENDORS.length} tone="blue" />
         <KpiCard label="Con documentos pendientes" value={VENDORS.filter((v) => v.docs !== "Completa").length} tone="amber" />
         <KpiCard label="Calificación promedio" value={(VENDORS.reduce((s, v) => s + v.rating, 0) / VENDORS.length).toFixed(1)} tone="green" />
@@ -215,7 +143,7 @@ function Inventory() {
   const low = items.filter((i) => i.stock < i.min);
   return (
     <div className="space-y-5">
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3">
         <KpiCard label="Referencias" value={items.length} tone="blue" />
         <KpiCard label="Bajo stock mínimo" value={low.length} tone="red" />
         <KpiCard label="Valor del inventario" value={moneyShort(items.reduce((s, i) => s + i.stock * i.cost, 0))} tone="slate" />
@@ -255,7 +183,7 @@ function Assets() {
   ];
   return (
     <div className="space-y-5">
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3">
         <KpiCard label="Activos registrados" value={rows.length} tone="blue" />
         <KpiCard label="Costo histórico" value={moneyShort(rows.reduce((s, a) => s + a.cost, 0))} tone="slate" />
         <KpiCard label="Valor en libros" value={moneyShort(rows.reduce((s, a) => s + a.book, 0))} tone="green" />
@@ -272,8 +200,15 @@ function Offices() {
   const [open, setOpen] = useState(false);
   const [f, setF] = useState({ office: "o1", room: "Sala de juntas", date: new Date().toISOString().slice(0, 10), from: "15:00", to: "16:00", purpose: "" });
   const office = OFFICES.find((o) => o.id === f.office)!;
+  const today = new Date().toISOString().slice(0, 10);
   return (
     <div className="space-y-5">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+        <KpiCard label="Sedes" value={OFFICES.length} tone="blue" />
+        <KpiCard label="Personas en sedes" value={OFFICES.reduce((s, o) => s + o.staff, 0)} tone="slate" />
+        <KpiCard label="Arriendos mensuales" value={moneyShort(OFFICES.reduce((s, o) => s + o.lease, 0))} tone="amber" />
+        <KpiCard label="Reservas de hoy" value={bookings.filter((b) => b.date.slice(0, 10) === today).length} hint={`${bookings.length} programadas`} tone="green" />
+      </div>
       <div className="grid gap-4 lg:grid-cols-3">
         {OFFICES.map((o) => (
           <div key={o.id} className="rounded-lg border p-4">

@@ -60,7 +60,7 @@ function Clients() {
           </>
         }
       />
-      <div className="mb-5 grid gap-4 sm:grid-cols-4">
+      <div className="mb-5 grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-4">
         <KpiCard label="Clientes" value={clients.filter((c) => c.status === "cliente").length} tone="green" />
         <KpiCard label="Prospectos" value={clients.filter((c) => c.status === "prospecto").length} tone="blue" />
         <KpiCard label="Empresas" value={clients.filter((c) => c.type === "empresa").length} tone="indigo" />

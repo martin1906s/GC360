@@ -69,7 +69,7 @@ function Analytics() {
         <Select value={channel} onChange={(e) => setChannel(e.target.value)} className="h-8 w-40 text-xs"><option value="all">Todos los canales</option>{["whatsapp", "email", "outlook", "llamada", "web"].map((c) => <option key={c} value={c}>{c}</option>)}</Select>
       </Card>
 
-      <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="mb-5 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-5">
         <KpiCard label="Casos en el filtro" value={f.cases.length} tone="blue" />
         <KpiCard label="Prima administrada" value={moneyShort(f.policies.reduce((s, p) => s + p.premium, 0))} tone="green" />
         <KpiCard label="Tasa de cierre" value={`${won + lost ? Math.round((won / (won + lost)) * 100) : 0}%`} tone="teal" hint={`${won} ganadas · ${lost} perdidas`} />

@@ -33,12 +33,12 @@ export function Avatar({ name, color, size = "md", className }: { name: string; 
 export function KpiCard({ label, value, delta, hint, icon, tone = "blue", onClick }: { label: string; value: ReactNode; delta?: number; hint?: ReactNode; icon?: ReactNode; tone?: Tone; onClick?: () => void }) {
   const t = TONE_CLASSES[tone];
   return (
-    <div onClick={onClick} className={cn("group relative overflow-hidden rounded-lg border bg-surface p-4 shadow-[0_1px_2px_rgba(15,23,42,0.04)]", onClick && "cursor-pointer transition hover:border-brand-200 hover:shadow-md")}>
+    <div onClick={onClick} className={cn("group relative overflow-hidden rounded-lg border bg-surface p-3 sm:p-4 shadow-[0_1px_2px_rgba(15,23,42,0.04)]", onClick && "cursor-pointer transition hover:border-brand-200 hover:shadow-md")}>
       <div className="flex items-start justify-between gap-2">
         <p className="text-xs font-medium leading-snug text-fg-muted">{label}</p>
-        {icon && <div className={cn("grid size-8 place-items-center rounded-lg [&_svg]:size-4", t.bg, t.text)}>{icon}</div>}
+        {icon && <div className={cn("hidden size-8 shrink-0 place-items-center sm:grid rounded-lg [&_svg]:size-4", t.bg, t.text)}>{icon}</div>}
       </div>
-      <p className="mt-2 text-2xl font-semibold tracking-tight tabular-nums">{value}</p>
+      <p className="mt-1.5 truncate text-xl font-semibold tracking-tight tabular-nums sm:mt-2 sm:text-2xl">{value}</p>
       <div className="mt-1 flex items-center gap-2 text-xs">
         {delta !== undefined && (
           <span className={cn("inline-flex items-center gap-0.5 font-medium", delta >= 0 ? "text-emerald-600" : "text-rose-600")}>

@@ -90,7 +90,7 @@ function ClientDetail() {
         </div>
       </Card>
 
-      <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="mb-5 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-5">
         <KpiCard label="Pólizas" value={my.policies.length} icon={<FileText />} tone="green" hint={my.policies.length ? money(my.policies.reduce((s, p) => s + p.premium, 0)) : undefined} />
         <KpiCard label="Casos" value={my.cases.length} icon={<Briefcase />} tone="blue" hint={`${my.cases.filter((c) => !["resuelto", "cerrado"].includes(c.status)).length} abiertos`} />
         <KpiCard label="Oportunidades" value={my.opps.length} icon={<Handshake />} tone="teal" />

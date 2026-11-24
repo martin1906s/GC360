@@ -88,19 +88,19 @@ function Player() {
           {/* Video */}
           <div ref={frame} className="overflow-hidden rounded-lg bg-ink-950 shadow-sm">
             <div className="relative aspect-video cursor-pointer select-none" onClick={() => (ended ? (setT(0), setPlaying(true)) : setPlaying(!playing))}>
-              <div className="absolute inset-0 flex flex-col justify-center px-[8%] text-white">
-                <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400">Lección {idx + 1} de {course.lessons.length}</p>
-                <h2 className="mt-3 text-2xl font-semibold leading-tight md:text-3xl">{lesson.title}</h2>
-                <ul className="mt-6 space-y-3">
+              <div className="absolute inset-0 flex flex-col justify-center px-5 text-white sm:px-[8%]">
+                <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-slate-400 sm:text-[11px]">Lección {idx + 1} de {course.lessons.length}</p>
+                <h2 className="mt-1 text-base font-semibold leading-tight sm:mt-3 sm:text-2xl md:text-3xl">{lesson.title}</h2>
+                <ul className="mt-2 space-y-1 sm:mt-6 sm:space-y-3">
                   {lesson.points.map((p, i) => (
-                    <li key={p} className={cn("flex items-center gap-3 text-base transition-all duration-500 md:text-lg", i < pointsShown ? "translate-x-0 opacity-100" : "-translate-x-2 opacity-0")}>
-                      <span className="size-2 rounded-full bg-brand-400" />{p}
+                    <li key={p} className={cn("flex items-center gap-2 text-xs transition-all duration-500 sm:gap-3 sm:text-base md:text-lg", i < pointsShown ? "translate-x-0 opacity-100" : "-translate-x-2 opacity-0")}>
+                      <span className="size-1.5 shrink-0 rounded-full bg-brand-400 sm:size-2" />{p}
                     </li>
                   ))}
                 </ul>
               </div>
-              <div className="absolute right-4 top-4 flex items-center gap-2 text-xs text-slate-400"><span className="grid size-7 place-items-center rounded-full bg-white/10 text-[10px] font-semibold text-white">{course.instructor.split(" ").map((n) => n[0]).join("")}</span>{course.instructor}</div>
-              {cc && t > 0 && !ended && <p className="absolute inset-x-[10%] bottom-6 rounded bg-black/70 px-3 py-1.5 text-center text-sm text-white">{caption}</p>}
+              <div className="absolute right-4 top-4 hidden items-center gap-2 text-xs text-slate-400 sm:flex"><span className="grid size-7 place-items-center rounded-full bg-white/10 text-[10px] font-semibold text-white">{course.instructor.split(" ").map((n) => n[0]).join("")}</span>{course.instructor}</div>
+              {cc && t > 0 && !ended && <p className="absolute inset-x-3 bottom-2 rounded bg-black/70 px-2 py-1 text-center text-[11px] text-white sm:inset-x-[10%] sm:bottom-6 sm:px-3 sm:py-1.5 sm:text-sm">{caption}</p>}
               {!playing && (
                 <div className="absolute inset-0 grid place-items-center bg-black/30">
                   {ended ? (
@@ -109,12 +109,12 @@ function Player() {
                       <p className="mt-2 font-medium">Lección completada</p>
                       {idx < course.lessons.length - 1 && <Button className="mt-4" onClick={(e) => { e.stopPropagation(); go(idx + 1); }}><SkipForward /> Siguiente lección</Button>}
                     </div>
-                  ) : <span className="grid size-16 place-items-center rounded-full bg-white/90 text-ink-950 shadow-lg"><Play className="ml-1 size-7" /></span>}
+                  ) : <span className="grid size-12 place-items-center rounded-full bg-white/90 text-ink-950 shadow-lg sm:size-16"><Play className="ml-1 size-5 sm:size-7" /></span>}
                 </div>
               )}
             </div>
             {/* Controles */}
-            <div className="border-t border-white/10 px-4 py-2.5 text-white">
+            <div className="border-t border-white/10 px-3 py-2.5 text-white sm:px-4">
               <div className="group relative h-1.5 cursor-pointer rounded-full bg-white/20" onClick={(e) => { const r = e.currentTarget.getBoundingClientRect(); setT(((e.clientX - r.left) / r.width) * lesson.duration); }}>
                 <div className="h-full rounded-full bg-brand-400" style={{ width: `${(t / lesson.duration) * 100}%` }} />
               </div>
@@ -122,7 +122,7 @@ function Player() {
                 <button className="rounded p-1.5 hover:bg-white/10" onClick={() => (ended ? (setT(0), setPlaying(true)) : setPlaying(!playing))} title={playing ? "Pausar" : "Reproducir"}>{playing ? <Pause className="size-4" /> : <Play className="size-4" />}</button>
                 <button className="rounded p-1.5 hover:bg-white/10" onClick={() => setT((x) => Math.max(0, x - 10))} title="Retroceder 10 s"><RotateCcw className="size-4" /></button>
                 <button className="rounded p-1.5 hover:bg-white/10" onClick={() => setT((x) => Math.min(lesson.duration - 1, x + 10))} title="Adelantar 10 s"><RotateCw className="size-4" /></button>
-                <span className="ml-2 text-xs tabular-nums text-slate-300">{fmt(t)} / {fmt(lesson.duration)}</span>
+                <span className="ml-1 whitespace-nowrap text-xs tabular-nums text-slate-300 sm:ml-2">{fmt(t)} / {fmt(lesson.duration)}</span>
                 <div className="ml-auto flex items-center gap-1">
                   <button className={cn("rounded p-1.5 hover:bg-white/10", !cc && "text-slate-500")} onClick={() => setCc(!cc)} title="Subtítulos"><Captions className="size-4" /></button>
                   <select value={speed} onChange={(e) => setSpeed(Number(e.target.value))} className="rounded bg-transparent px-1 py-1 text-xs hover:bg-white/10">

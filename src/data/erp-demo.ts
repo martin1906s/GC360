@@ -46,6 +46,7 @@ export const CHART_OF_ACCOUNTS = [
   { code: "1305", name: "Comisiones por cobrar", nature: "Débito", balance: 38_900_000 },
   { code: "2205", name: "Proveedores", nature: "Crédito", balance: 36_285_000 },
   { code: "2408", name: "IVA por pagar", nature: "Crédito", balance: 7_390_000 },
+  { code: "3105", name: "Capital y utilidades retenidas", nature: "Crédito", balance: 183_275_000 },
   { code: "4150", name: "Ingresos por comisiones", nature: "Crédito", balance: 412_800_000 },
   { code: "5105", name: "Gastos de personal", nature: "Débito", balance: 254_300_000 },
   { code: "5120", name: "Arrendamientos", nature: "Débito", balance: 93_500_000 },
@@ -190,4 +191,95 @@ export const COURSES: Course[] = [
       L("d2", "Buenas prácticas de seguridad", 60, ["Contraseñas seguras", "No compartir documentos por canales personales", "Reportar incidentes"], ["Los documentos de clientes solo se comparten desde la plataforma."]),
     ],
   },
+];
+
+/* ───────── Ficha de colaboradores ───────── */
+
+export interface EmployeeProfile {
+  doc: string;
+  email: string;
+  phone: string;
+  birth: string;
+  city: string;
+  address: string;
+  eps: string;
+  afp: string;
+  arl: string;
+  ccf: string;
+  bank: string;
+  emergency: string;
+  manager: string;
+  schedule: string;
+  salaryHistory: { date: string; salary: number; reason: string }[];
+  vacations: { from: string; to: string; days: number }[];
+  reviews: { period: string; score: number; comment: string }[];
+  documents: { name: string; status: "vigente" | "por_vencer" | "pendiente" }[];
+}
+
+const AREA_MANAGER: Record<string, string> = { Comercial: "Carolina Vélez", Operaciones: "Carolina Vélez", Financiero: "Carolina Vélez", Tecnología: "Laura Méndez", Administración: "Natalia Ospina", Gerencia: "Junta directiva" };
+const EPS = ["Salud Total Andina", "Nueva Salud", "Sura Salud", "Compensar Salud"];
+const AFP = ["Protección", "Porvenir", "Colfondos"];
+
+export const EMPLOYEE_PROFILES: Record<string, EmployeeProfile> = Object.fromEntries(
+  EMPLOYEES.map((e, i) => {
+    const first = e.name.split(" ")[0].toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    const last = e.name.split(" ")[1].toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    const hiredYear = Number(e.hired.slice(0, 4));
+    return [e.id, {
+      doc: `CC ${(1_017_200_000 + i * 731_119).toLocaleString("es-CO")}`,
+      email: `${first}.${last}@granseguros.co`,
+      phone: `+57 31${i} 555 0${(120 + i * 7).toString().padStart(3, "0")}`,
+      birth: `${1978 + i * 3}-0${(i % 9) + 1}-1${i % 9}`,
+      city: i % 3 === 0 ? "Envigado" : "Medellín",
+      address: `Cra. ${40 + i} #${10 + i * 3}-${20 + i}`,
+      eps: EPS[i % EPS.length],
+      afp: AFP[i % AFP.length],
+      arl: "Positiva ARL",
+      ccf: "Comfama",
+      bank: `Banco Andino · Ahorros ****${(4100 + i * 37).toString().slice(-4)}`,
+      emergency: `${["Ana", "Luis", "Marta", "Jorge", "Elena", "Pedro", "Sara", "Diego"][i]} ${e.name.split(" ")[1]} · +57 30${i} 444 01${i}0`,
+      manager: AREA_MANAGER[e.area] ?? "Carolina Vélez",
+      schedule: "Lunes a viernes · 8:00 a. m. – 5:30 p. m.",
+      salaryHistory: [
+        { date: `${hiredYear}-${e.hired.slice(5, 7)}-01`, salary: Math.round(e.salary * 0.72 / 10000) * 10000, reason: "Ingreso" },
+        ...(hiredYear < 2024 ? [{ date: "2025-01-01", salary: Math.round(e.salary * 0.92 / 10000) * 10000, reason: "Incremento anual" }] : []),
+        { date: "2026-01-01", salary: e.salary, reason: hiredYear < 2025 ? "Incremento anual" : "Ajuste de cargo" },
+      ],
+      vacations: i % 2 === 0
+        ? [{ from: "2026-07-06", to: "2026-07-17", days: 10 }, { from: "2025-12-22", to: "2026-01-02", days: 8 }]
+        : [{ from: "2026-04-13", to: "2026-04-24", days: 10 }],
+      reviews: [
+        { period: "2026 · primer semestre", score: [4.6, 4.8, 4.3, 4.1, 4.5, 4.4, 4.2, 3.9][i], comment: ["Lidera bien la adopción de la plataforma.", "Gestión destacada del equipo y resultados.", "Supera la meta de cierre del trimestre.", "Buena atención; mejorar seguimiento de prospectos.", "Tiempos de emisión por debajo del SLA.", "Cartera vencida reducida 18%.", "Excelente calidad en la supervisión de la IA.", "En adaptación; buen compromiso."][i] },
+        ...(hiredYear < 2025 ? [{ period: "2025 · segundo semestre", score: [4.4, 4.7, 4.2, 4.0, 4.3, 4.5, 4.0, 3.8][i], comment: "Cumplimiento de objetivos del periodo." }] : []),
+      ],
+      documents: [
+        { name: "Contrato de trabajo", status: "vigente" },
+        { name: "Hoja de vida y soportes", status: "vigente" },
+        { name: "Afiliación a seguridad social", status: "vigente" },
+        { name: "Examen médico ocupacional", status: i % 3 === 1 ? "por_vencer" : "vigente" },
+        { name: "Acuerdo de confidencialidad", status: i === 7 ? "pendiente" : "vigente" },
+      ],
+    } satisfies EmployeeProfile];
+  }),
+);
+
+/* ───────── Nómina: novedades de ejemplo ───────── */
+
+export type PayrollNoveltyType = "horas_extra" | "bonificacion" | "comision" | "incapacidad" | "descuento";
+export interface PayrollNovelty { id: string; employeeId: string; type: PayrollNoveltyType; detail: string; amount: number }
+
+export const NOVELTY_META: Record<PayrollNoveltyType, { label: string; sign: 1 | -1 }> = {
+  horas_extra: { label: "Horas extra", sign: 1 },
+  bonificacion: { label: "Bonificación", sign: 1 },
+  comision: { label: "Comisión de ventas", sign: 1 },
+  incapacidad: { label: "Incapacidad (descuento 1/3)", sign: -1 },
+  descuento: { label: "Descuento / libranza", sign: -1 },
+};
+
+export const PAYROLL_NOVELTIES: PayrollNovelty[] = [
+  { id: "nv1", employeeId: "e3", type: "comision", detail: "Comisión por pólizas emitidas en noviembre", amount: 1_240_000 },
+  { id: "nv2", employeeId: "e5", type: "horas_extra", detail: "8 horas extra diurnas (cierre de renovaciones)", amount: 175_000 },
+  { id: "nv3", employeeId: "e4", type: "comision", detail: "Comisión por pólizas emitidas en noviembre", amount: 680_000 },
+  { id: "nv4", employeeId: "e8", type: "incapacidad", detail: "2 días de incapacidad general", amount: 46_000 },
+  { id: "nv5", employeeId: "e6", type: "descuento", detail: "Libranza fondo de empleados", amount: 250_000 },
 ];

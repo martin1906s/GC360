@@ -41,7 +41,7 @@ function Renewals() {
   return (
     <div className="animate-fade-in">
       <PageHeader title="Renovaciones y siniestros" description="Vencimientos próximos y siniestros en curso." actions={<Segmented value={range} onChange={setRange} options={[{ key: "30", label: "30 días" }, { key: "60", label: "60 días" }, { key: "90", label: "90 días" }]} />} />
-      <div className="mb-5 grid gap-4 sm:grid-cols-4">
+      <div className="mb-5 grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-4">
         <KpiCard label="Vencen ≤ 15 días" value={policies.filter((p) => daysUntil(p.endDate) >= 0 && daysUntil(p.endDate) <= 15).length} tone="red" />
         <KpiCard label="Vencen ≤ 30 días" value={policies.filter((p) => daysUntil(p.endDate) >= 0 && daysUntil(p.endDate) <= 30).length} tone="amber" />
         <KpiCard label="Renovaciones en gestión" value={cases.filter((c) => c.category === "renovacion" && !["resuelto", "cerrado"].includes(c.status)).length} tone="blue" />

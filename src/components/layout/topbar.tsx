@@ -60,18 +60,18 @@ export function Topbar() {
 
   return (
     <header className="no-print sticky top-0 z-30 border-b bg-white/85 backdrop-blur-md">
-      <div className="flex h-14 items-center gap-3 px-4 lg:px-6">
+      <div className="flex h-14 min-w-0 items-center gap-2 px-3 sm:gap-3 sm:px-4 lg:px-6">
         <button className="rounded-md p-1.5 text-fg-muted hover:bg-slate-100 lg:hidden" onClick={() => setMobileNav(true)}>
           <MenuIcon className="size-5" />
         </button>
 
-        <button onClick={() => setCommand(true)} className="flex h-9 w-full max-w-md items-center gap-2 rounded-lg border bg-slate-50/70 px-3 text-sm text-fg-subtle transition hover:border-slate-300 hover:bg-white">
+        <button onClick={() => setCommand(true)} className="flex h-9 min-w-0 flex-1 items-center gap-2 rounded-lg border sm:max-w-md bg-slate-50/70 px-3 text-sm text-fg-subtle transition hover:border-slate-300 hover:bg-white">
           <Search className="size-4" />
-          <span className="flex-1 truncate text-left">Buscar cliente, caso, póliza, placa…</span>
+          <span className="min-w-0 flex-1 truncate text-left"><span className="sm:hidden">Buscar…</span><span className="hidden sm:inline">Buscar cliente, caso, póliza, placa…</span></span>
           <kbd className="hidden rounded border bg-white px-1.5 text-[10px] font-medium text-fg-muted sm:block">Ctrl K</kbd>
         </button>
 
-        <div className="ml-auto flex items-center gap-1.5">
+        <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-1.5">
           <button onClick={() => setIntegrations(true)} title="Estado de integraciones" className="hidden shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md border border-dashed border-amber-300 bg-amber-50 px-2.5 py-1.5 text-[11px] font-medium text-amber-800 hover:bg-amber-100 md:flex">
             <PlugZap className="size-3.5" /> <span className="2xl:hidden">Demo</span><span className="hidden 2xl:inline">Entorno de demostración</span>
           </button>
@@ -114,13 +114,13 @@ export function Topbar() {
           <Menu
             width="w-80"
             trigger={(open) => (
-              <button className={cn("flex items-center gap-2 rounded-lg py-1 pl-1 pr-2 hover:bg-slate-100", open && "bg-slate-100")}>
+              <button className={cn("flex items-center gap-2 rounded-lg p-1 hover:bg-slate-100 sm:pr-2", open && "bg-slate-100")}>
                 <Avatar name={user.name} color={user.color} size="sm" />
                 <div className="hidden whitespace-nowrap text-left leading-tight xl:block">
                   <p className="text-[13px] font-medium">{user.name}</p>
                   <p className="text-[11px] text-fg-muted">{ROLE_META[user.role].label}</p>
                 </div>
-                <ChevronDown className="size-3.5 text-fg-subtle" />
+                <ChevronDown className="hidden size-3.5 text-fg-subtle sm:block" />
               </button>
             )}
           >

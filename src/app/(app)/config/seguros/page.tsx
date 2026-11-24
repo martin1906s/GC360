@@ -34,12 +34,12 @@ function Config() {
         <Tabs className="px-3" value={tab} onChange={setTab} tabs={[{ key: "aseguradoras", label: "Aseguradoras", count: insurers.length }, { key: "ramos", label: "Ramos", count: lines.length }, { key: "productos", label: "Productos", count: products.length }, { key: "plantillas", label: "Plantillas", count: templates.length }, { key: "parametros", label: "SLA y etapas" }]} />
         <CardContent>
           {tab === "aseguradoras" && (
-            <table className="w-full text-sm">
-              <thead><tr className="border-b text-left text-[11px] uppercase tracking-wide text-fg-muted"><th className="py-2">Aseguradora</th><th>Calificación</th><th>Comisión pactada</th><th>Contacto canal intermediarios</th><th className="text-right">Activa</th></tr></thead>
+            <div className="overflow-x-auto scroll-thin"><table className="w-full text-sm">
+              <thead><tr className="border-b text-left text-[11px] uppercase tracking-wide text-fg-muted"><th className="py-2">Aseguradora</th><th className="px-2">Calificación</th><th className="px-2">Comisión</th><th className="hidden px-2 lg:table-cell">Contacto canal intermediarios</th><th className="text-right">Activa</th></tr></thead>
               <tbody>{insurers.map((i) => (
-                <tr key={i.id} className="border-b last:border-0"><td className="py-3"><div className="flex items-center gap-3"><InsurerChip id={i.id} /><span className="text-xs text-fg-muted">{i.name}</span></div></td><td>{i.rating}</td><td>{pct(i.commissionRate, 0)}</td><td className="text-xs text-fg-muted">{i.contactEmail}</td><td className="text-right"><Switch checked={i.active} onChange={() => { toggleInsurer(i.id); toast("Catálogo actualizado y auditado"); }} /></td></tr>
+                <tr key={i.id} className="border-b last:border-0"><td className="py-3"><div className="flex items-center gap-3"><InsurerChip id={i.id} /><span className="hidden text-xs text-fg-muted md:inline">{i.name}</span></div></td><td className="px-2">{i.rating}</td><td className="px-2">{pct(i.commissionRate, 0)}</td><td className="hidden px-2 text-xs text-fg-muted lg:table-cell">{i.contactEmail}</td><td className="text-right"><Switch checked={i.active} onChange={() => { toggleInsurer(i.id); toast("Catálogo actualizado y auditado"); }} /></td></tr>
               ))}</tbody>
-            </table>
+            </table></div>
           )}
           {tab === "ramos" && (
             <div className="grid gap-3 md:grid-cols-2">

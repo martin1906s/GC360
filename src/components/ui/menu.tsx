@@ -16,7 +16,7 @@ export function Menu({ trigger, children, align = "right", width = "w-56" }: { t
     <div className="relative" ref={ref}>
       <div onClick={() => setOpen(!open)}>{trigger(open)}</div>
       {open && (
-        <div className={cn("absolute z-40 mt-1.5 animate-fade-in rounded-lg border bg-white p-1 shadow-xl", width, align === "right" ? "right-0" : "left-0")}>
+        <div className={cn("absolute z-40 mt-1.5 animate-fade-in rounded-lg border bg-white p-1 shadow-xl max-sm:fixed max-sm:inset-x-3 max-sm:top-14 max-sm:mt-0 max-sm:w-auto", width, align === "right" ? "right-0" : "left-0")}>
           {children(() => setOpen(false))}
         </div>
       )}

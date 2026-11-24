@@ -58,6 +58,12 @@ body {
   border-color: var(--border);
 }
 
+/* grid-shrink: los hijos de una grilla pueden encogerse (evita desbordes en teléfono).
+   En @layer base para que las utilidades min-w-* sigan teniendo prioridad. */
+@layer base {
+  .grid > * { min-width: 0; }
+}
+
 /* Scrollbars discretas */
 .scroll-thin {
   scrollbar-width: thin;

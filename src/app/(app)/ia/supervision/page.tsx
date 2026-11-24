@@ -37,7 +37,7 @@ function Supervision() {
   return (
     <div className="animate-fade-in">
       <PageHeader title="Centro de supervisión IA" description="Acciones propuestas por la IA que esperan tu aprobación." />
-      <div className="mb-5 grid gap-4 sm:grid-cols-4">
+      <div className="mb-5 grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-4">
         <KpiCard label="Pendientes de aprobación" value={count("pendiente")} tone="amber" icon={<ShieldAlert />} />
         <KpiCard label="Sugeridas (no sensibles)" value={count("sugerida")} tone="blue" icon={<Bot />} />
         <KpiCard label="Ejecutadas" value={count("ejecutada")} tone="green" icon={<ShieldCheck />} />
@@ -64,7 +64,7 @@ function Supervision() {
                     {"body" in a.payload && <p className="mt-2 rounded-lg bg-slate-50 p-2.5 text-[13px] text-fg-muted">«{String(a.payload.body)}»</p>}
                     {a.decidedBy && <p className="mt-2 text-xs text-fg-muted">Decisión de <b>{a.decidedBy}</b> · {a.decidedAt && fmtDateTime(a.decidedAt)}{a.decisionNote ? ` · «${a.decisionNote}»` : ""}</p>}
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex w-full flex-wrap justify-end gap-2 sm:w-auto">
                     <Button size="sm" variant="ghost" onClick={() => setSelected(a)}><FileSearch /> Revisar</Button>
                     {["pendiente", "sugerida"].includes(a.status) && (
                       <>

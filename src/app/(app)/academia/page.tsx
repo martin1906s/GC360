@@ -34,7 +34,7 @@ function Academy() {
   return (
     <div className="animate-fade-in">
       <PageHeader title={"Academia GC360"} description="Formación de empleados y vendedores: cursos, biblioteca de productos de seguros, evaluaciones y tutor de IA." />
-      <div className="mb-5 grid gap-4 sm:grid-cols-4">
+      <div className="mb-5 grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-4">
         <KpiCard label="Cursos disponibles" value={COURSES.length} icon={<GraduationCap />} tone="blue" />
         <KpiCard label="Completados" value={COURSES.filter((c) => progress[c.id] === 100).length} icon={<CheckCircle2 />} tone="green" />
         <KpiCard label="Horas de formación" value="7,8 h" icon={<Clock />} tone="indigo" />

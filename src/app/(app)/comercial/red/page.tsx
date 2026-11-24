@@ -47,7 +47,7 @@ function Network() {
   return (
     <div className="animate-fade-in">
       <PageHeader title="Red comercial" description="Vendedores internos, externos y afiliados con su producción y comisiones." />
-      <div className="mb-5 grid gap-4 sm:grid-cols-4">
+      <div className="mb-5 grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-4">
         <KpiCard label="Integrantes activos" value={sellers.filter((s) => s.active).length} tone="blue" />
         <KpiCard label="Afiliados" value={sellers.filter((s) => s.type === "afiliado").length} tone="orange" />
         <KpiCard label="Producción de la red" value={moneyShort(total)} tone="green" />
